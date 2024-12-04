@@ -14,7 +14,7 @@ let parseInput (input : string) =
     |> Seq.map (fun s -> s.ToCharArray())
     |> Seq.toArray
 
-let findXmas (input : char array array) =
+let findXmasForwardsForwards (input : char array array) =
     let mutable xmasCount = 0
 
     for i in 0..input.Length - 3 do
