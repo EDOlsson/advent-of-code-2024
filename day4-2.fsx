@@ -55,7 +55,7 @@ let findXmasBackwardsForwards (input : char array array) =
     count
 
 let countXmas (input : char array array) =
-    findXmas input +
+    findXmasForwardsForwards input +
     findXmasForwardsBackwards input +
     findXmasBackwardsBackwards input +
     findXmasBackwardsForwards input
