@@ -31,12 +31,11 @@ type PageOrderingRule =
     { Page1 : int
       Page2 : int }
 
-type UpdatePages =
-    { PageNumbers : int list }
+type PagesToUpdate = int list
 
 type Day5Input =
     { PageOrderingRules : PageOrderingRule seq
-      UpdatePages : UpdatePages seq }
+      UpdatePages : PagesToUpdate seq }
 
 let parseInput (input : string) =
     let parsePageOrderingRules (input : string) =
@@ -50,13 +49,13 @@ let parseInput (input : string) =
         |> Seq.skipWhile (fun l -> l.Length > 0)
         |> Seq.skip 1
         |> Seq.map (fun l -> l.Split(',', System.StringSplitOptions.RemoveEmptyEntries))
-        |> Seq.map (fun a -> { PageNumbers = a |> Seq.map int |> Seq.toList })
+        |> Seq.map (fun a -> a |> Seq.map int |> Seq.toList)
 
     { PageOrderingRules = parsePageOrderingRules input
       UpdatePages = parseUpdatePages input }
 
-let arePagesOutOfOrder (pageOrderingRules : PageOrderingRule seq) (updatePages : UpdatePages) =
-    let indexedPages = updatePages.PageNumbers |> List.indexed
+let arePagesOutOfOrder (pageOrderingRules : PageOrderingRule seq) (updatePages : PagesToUpdate) =
+    let indexedPages = updatePages |> List.indexed
 
     pageOrderingRules
     |> Seq.exists (fun r -> 
@@ -67,9 +66,11 @@ let arePagesOutOfOrder (pageOrderingRules : PageOrderingRule seq) (updatePages :
         | Some i1, Some i2 -> i1 > i2
         | _ -> false)    // ignore this rule if the pages are not in the update list
         
-let fixPageOrder (pageOrderingRules : PageOrderingRule seq) (updatePages : UpdatePages) =
+let fixPageOrder (pageOrderingRules : PageOrderingRule seq) (updatePages : PagesToUpdate) =
+    let ruleAppliesToPages (rule : PageOrderingRule) = Seq.exists (fun p -> p = rule.Page1) updatePages && Seq.exists (fun p -> p = rule.Page2) updatePages
+
     let ruleCounts = pageOrderingRules
-                     |> Seq.filter (fun r -> Seq.exists (fun p -> p = r.Page1) updatePages.PageNumbers && Seq.exists (fun p -> p = r.Page2) updatePages.PageNumbers)
+                     |> Seq.filter ruleAppliesToPages
                      |> Seq.countBy (fun r -> r.Page1)
 
     let pagesInOrder = ruleCounts
@@ -78,15 +79,14 @@ let fixPageOrder (pageOrderingRules : PageOrderingRule seq) (updatePages : Updat
                         |> Seq.map (fun (page, count) -> page)
                         |> Seq.toList
 
-    let remainingPages = updatePages.PageNumbers
-                         |> List.filter (fun p -> not (pagesInOrder |> List.exists (fun page -> page = p)))
+    let remainingPages = List.except pagesInOrder updatePages
 
-    { PageNumbers = pagesInOrder @ remainingPages }
+    pagesInOrder @ remainingPages
 
-let findMiddlePage (updatePages : UpdatePages) =
-    let pageCount = List.length updatePages.PageNumbers
+let findMiddlePage (updatePages : PagesToUpdate) =
+    let pageCount = List.length updatePages
 
-    updatePages.PageNumbers
+    updatePages
     |> List.skip (pageCount / 2)
     |> List.head
 
