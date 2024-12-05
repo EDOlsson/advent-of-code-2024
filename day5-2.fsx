@@ -79,7 +79,7 @@ let fixPageOrder (pageOrderingRules : PageOrderingRule seq) (updatePages : Pages
                         |> Seq.map (fun (page, count) -> page)
                         |> Seq.toList
 
-    let remainingPages = List.except pagesInOrder updatePages
+    let remainingPages = updatePages |> List.except pagesInOrder
 
     pagesInOrder @ remainingPages
 
